@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { Pie, Bar } from "react-chartjs-2";
 import {
@@ -12,7 +12,6 @@ import {
 	Legend
 } from "chart.js";
 import DashboardSection from "./components/DashboardSection";
-// import { useState } from "react";
 
 ChartJS.register(
 	CategoryScale,
@@ -23,6 +22,20 @@ ChartJS.register(
 	Tooltip,
 	Legend
 );
+
+const formatCurrency = (number) => {
+	if (number < 0) {
+		return new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD"
+		}).format(number * -1);
+	} else {
+		return new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD"
+		}).format(number);
+	}
+};
 
 function App() {
 	const [transactions, setTransactions] = useState([]);
@@ -38,6 +51,54 @@ function App() {
 			}
 		]
 	});
+	const [inputValue, setInputValue] = useState("");
+	const [messages, setMessages] = useState([
+		{ text: "Ask me anything about your transactions", type: "response" } // Initial prompt message
+	]);
+
+	const promptRef = useRef(null); // Ref to track the .prompt container
+
+	// Function to keep the chat box scrolled to the bottom
+	const scrollToBottom = () => {
+		const prompt = promptRef.current;
+		if (prompt) {
+			prompt.scrollTop = prompt.scrollHeight; // Manually set the scroll position
+		}
+	};
+
+	useEffect(() => {
+		scrollToBottom(); // Scroll to bottom whenever messages change
+	}, [messages]);
+
+	const handleSubmit = async (event) => {
+		event.preventDefault(); // Prevents the form from refreshing the page
+		setMessages((prevMessages) => [
+			...prevMessages,
+			{ text: inputValue, type: "user" }
+		]);
+		try {
+			const response = await fetch("http://192.168.1.75:3000/users/3/query", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-auth-token":
+						"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTc5ODkyLCJleHAiOjE3MjM5ODM0OTJ9.bcvu1aKW9qO59K_1ngtYXmmkCI-_jb7i9Cy8KtJ3qw8"
+				},
+				body: JSON.stringify({
+					query: inputValue // Send the input value in the request body
+				})
+			});
+
+			const data = await response.json(); // Parse the response as JSON
+			setMessages((prevMessages) => [
+				...prevMessages,
+				{ text: data.answer, type: "response" }
+			]);
+		} catch (error) {
+			console.error("Error:", error); // Handle any errors
+		}
+		setInputValue("");
+	};
 
 	useEffect(() => {
 		const fetchTransactions = async () => {
@@ -49,7 +110,7 @@ function App() {
 					headers: {
 						"Content-Type": "application/json",
 						"x-auth-token":
-							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTcxODE0LCJleHAiOjE3MjM5NzU0MTR9.8q9qq5IehUHhjU5snhH4rk8enu-9xcbvUeJAximz8-I"
+							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTc5ODkyLCJleHAiOjE3MjM5ODM0OTJ9.bcvu1aKW9qO59K_1ngtYXmmkCI-_jb7i9Cy8KtJ3qw8"
 					}
 				}
 			);
@@ -132,7 +193,6 @@ function App() {
 				label: "Spending in 2023", // Label for the dataset
 				data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
 				backgroundColor: ["#4f646f"], // Bar color
-				// borderColor: "rgba(75, 192, 192, 1)", // Border color
 				borderWidth: 1, // Border width for bars
 				borderRadius: 10
 			}
@@ -191,22 +251,40 @@ function App() {
 					<div className="summary">
 						<div className="balance">
 							<h6>Remaining Balance</h6>
-							<h2>{transactions && transactions[0]?.amount}</h2>
+							<h2>{transactions && formatCurrency(transactions[0]?.amount)}</h2>
 						</div>
 						<div className="spent">
 							<h6>Spent this Month</h6>
-							<h2>{totalAmount && totalAmount}</h2>
+							<h2>{totalAmount && formatCurrency(totalAmount)}</h2>
 						</div>
 					</div>
 				</DashboardSection>
 				<DashboardSection title="Ask about your Finances">
 					<div className="chat-box">
-						<div className="prompt">
-							<p>Ask me anything about your transactions</p>
+						<div
+							className="prompt"
+							ref={promptRef}
+							style={{ maxHeight: "300px", overflowY: "auto" }}
+						>
+							{messages.map((message, index) => (
+								<p
+									key={index}
+									className={`message ${message.type}`} // You can use this class to style user and response messages differently
+								>
+									{message.text}
+								</p>
+							))}
 						</div>
-						{/* <div className="chat-input"> */}
-						<input placeholder="Ex. How much did I spent last month on food?"></input>
-						{/* </div> */}
+						<form className="chat-form" onSubmit={handleSubmit}>
+							<input
+								value={inputValue}
+								onChange={(e) => setInputValue(e.target.value)}
+								placeholder="Ex. How much did I spent last month on food?"
+							></input>
+							<button className="submit-button" type="submit">
+								Submit
+							</button>
+						</form>
 					</div>
 				</DashboardSection>
 				<DashboardSection title="Transaction Summaries">
@@ -215,12 +293,7 @@ function App() {
 							<Pie className="pie" data={chartData} options={options} />
 						</div>
 						<div className="bar-chart">
-							<Bar
-								className="bar"
-								data={bardata}
-								options={baroptions}
-								// style={{ minWidth:  }}
-							/>
+							<Bar className="bar" data={bardata} options={baroptions} />
 						</div>
 					</div>
 				</DashboardSection>
@@ -241,7 +314,7 @@ function App() {
 										<tr key={transaction.transaction_id}>
 											<td>{transaction.merchant}</td>
 											<td>{transaction.category}</td>
-											<td>{transaction.amount}</td>
+											<td>{formatCurrency(transaction.amount)}</td>
 											<td>{transaction.date.slice(0, 10)}</td>
 										</tr>
 									))}
