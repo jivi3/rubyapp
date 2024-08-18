@@ -103,7 +103,9 @@ function Login() {
       <div className="container">
         <h2>Login</h2>
         <form onSubmit={handleLogin} className="form">
-          <label htmlFor="email" className="label">Email:</label>
+          <label htmlFor="email" className="label">
+            Email:
+          </label>
           <input
             type="email"
             id="email"
@@ -112,7 +114,9 @@ function Login() {
             required
             className="input"
           />
-          <label htmlFor="password" className="label">Password:</label>
+          <label htmlFor="password" className="label">
+            Password:
+          </label>
           <input
             type="password"
             id="password"
@@ -121,8 +125,18 @@ function Login() {
             required
             className="input"
           />
-          <button type="submit" className="button">Login</button>
+          <button type="submit" className="button">
+            Login
+          </button>
         </form>
+        <button
+          type="button"
+          className="button"
+          onClick={() => navigate("/register")}
+        >
+          Register
+        </button>
+
         {errorMessage && <p className="error">{errorMessage}</p>}
       </div>
     </>
