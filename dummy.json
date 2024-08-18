@@ -1,0 +1,76 @@
+{
+	"account_overview": {
+		"credit_limit": 10000,
+		"available_credit": 7500,
+		"current_balance": 2500
+	},
+	"recent_transactions": [
+		{
+			"date": "2024-08-15",
+			"merchant": "Amazon",
+			"amount": 75.99,
+			"category": "Shopping"
+		},
+		{
+			"date": "2024-08-14",
+			"merchant": "Starbucks",
+			"amount": 4.75,
+			"category": "Food & Drinks"
+		},
+		{
+			"date": "2024-08-12",
+			"merchant": "Acme Grocery",
+			"amount": 45.3,
+			"category": "Groceries"
+		}
+	],
+	"payment_info": {
+		"last_payment": {
+			"date": "2024-08-01",
+			"amount": 100
+		},
+		"upcoming_payment": {
+			"date": "2024-09-01",
+			"amount_due": 50
+		},
+		"scheduled_payments": [
+			{
+				"date": "2024-09-01",
+				"amount": 50
+			}
+		]
+	},
+	"spending_insights": {
+		"monthly_spend_by_category": {
+			"groceries": 200,
+			"food_and_drinks": 50,
+			"shopping": 150
+		},
+		"spending_trends": {
+			"last_3_months": [
+				{
+					"month": "June",
+					"amount_spent": 400
+				},
+				{
+					"month": "July",
+					"amount_spent": 500
+				},
+				{
+					"month": "August",
+					"amount_spent": 450
+				}
+			]
+		}
+	},
+	"notifications": [
+		{
+			"type": "Payment Due",
+			"message": "Your payment of $50 is due on September 1, 2024."
+		},
+		{
+			"type": "Low Balance",
+			"message": "Your available credit is below 25%."
+		}
+	]
+}
