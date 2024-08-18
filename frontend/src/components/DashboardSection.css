@@ -1,0 +1,7 @@
+.dashboard-section {
+	/* margin: 10px; */
+	padding: 20px;
+	flex: 1 1 300px;
+	border-radius: 20px;
+	background: #ffffff;
+}
