@@ -1,26 +1,27 @@
 import { useState, useEffect, useRef } from "react";
+import "./index.css";
 import "./App.css";
 import { Pie, Bar } from "react-chartjs-2";
 import {
-  Chart as ChartJS,
-  Title,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-  ArcElement,
-  Tooltip,
-  Legend,
+	Chart as ChartJS,
+	Title,
+	BarElement,
+	CategoryScale,
+	LinearScale,
+	ArcElement,
+	Tooltip,
+	Legend
 } from "chart.js";
 import DashboardSection from "./components/DashboardSection";
 
 ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  ArcElement,
-  Tooltip,
-  Legend
+	CategoryScale,
+	LinearScale,
+	BarElement,
+	Title,
+	ArcElement,
+	Tooltip,
+	Legend
 );
 
 const formatCurrency = (number) => {
@@ -34,6 +35,22 @@ const formatCurrency = (number) => {
 			style: "currency",
 			currency: "USD"
 		}).format(number);
+	}
+};
+
+const getGreeting = (userName, hour) => {
+	if (userName && userName.length <= 30) {
+		if (hour > 17) {
+			return "Good Evening, " + userName;
+		} else if (hour > 11) {
+			return "Good Afternoon, " + userName;
+		} else return "Good Morning, " + userName;
+	} else {
+		if (hour > 17) {
+			return "Good Evening";
+		} else if (hour > 11) {
+			return "Good Afternoon";
+		} else return "Good Morning";
 	}
 };
 
@@ -55,6 +72,7 @@ function App() {
 	const [messages, setMessages] = useState([
 		{ text: "Ask me anything about your transactions", type: "response" } // Initial prompt message
 	]);
+	const [userDetails, setUserDetails] = useState({});
 
 	const promptRef = useRef(null); // Ref to track the .prompt container
 
@@ -69,25 +87,51 @@ function App() {
 	useEffect(() => {
 		scrollToBottom(); // Scroll to bottom whenever messages change
 	}, [messages]);
+	const hour = new Date().getHours();
+
+	useEffect(() => {
+		const fetchUserDetails = async () => {
+			const storedToken = localStorage.getItem("token");
+			const storedUserId = localStorage.getItem("user_id");
+			const response = await fetch(
+				`http://192.168.1.75:3000/users/${storedUserId}`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						"x-auth-token": `${storedToken}`
+					}
+				}
+			);
+			const data = await response.json();
+			console.log("data", data);
+			setUserDetails(data);
+		};
+		fetchUserDetails();
+	}, []);
 
 	const handleSubmit = async (event) => {
+		const storedToken = localStorage.getItem("token");
+		const storedUserId = localStorage.getItem("user_id");
 		event.preventDefault(); // Prevents the form from refreshing the page
 		setMessages((prevMessages) => [
 			...prevMessages,
 			{ text: inputValue, type: "user" }
 		]);
 		try {
-			const response = await fetch("http://192.168.1.75:3000/users/3/query", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-					"x-auth-token":
-						"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTc5ODkyLCJleHAiOjE3MjM5ODM0OTJ9.bcvu1aKW9qO59K_1ngtYXmmkCI-_jb7i9Cy8KtJ3qw8"
-				},
-				body: JSON.stringify({
-					query: inputValue // Send the input value in the request body
-				})
-			});
+			const response = await fetch(
+				`http://192.168.1.75:3000/users/${storedUserId}/query`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"x-auth-token": `${storedToken}`
+					},
+					body: JSON.stringify({
+						query: inputValue // Send the input value in the request body
+					})
+				}
+			);
 
 			const data = await response.json(); // Parse the response as JSON
 			setMessages((prevMessages) => [
@@ -103,14 +147,15 @@ function App() {
 	useEffect(() => {
 		const fetchTransactions = async () => {
 			// Fetch transactions from the backend
+			const storedToken = localStorage.getItem("token");
+			const storedUserId = localStorage.getItem("user_id");
 			const response = await fetch(
-				"http://192.168.1.75:3000/users/3/transactions",
+				`http://192.168.1.75:3000/users/${storedUserId}/transactions`,
 				{
 					method: "GET",
 					headers: {
 						"Content-Type": "application/json",
-						"x-auth-token":
-							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTc5ODkyLCJleHAiOjE3MjM5ODM0OTJ9.bcvu1aKW9qO59K_1ngtYXmmkCI-_jb7i9Cy8KtJ3qw8"
+						"x-auth-token": `${storedToken}`
 					}
 				}
 			);
@@ -120,139 +165,137 @@ function App() {
 		fetchTransactions();
 	}, []);
 
-  const fetchTransactions = async () => {
-    const response = await fetch("http://localhost:3000/users/2/transactions", {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        "x-auth-token": "your_jwt_token_here",
-      },
-    });
-    const data = await response.json();
-    setTransactions(data);
-  };
+	useEffect(() => {
+		// Process the transactions to group by category
+		const categoryTotals = transactions.reduce((acc, transaction) => {
+			const { category, amount } = transaction;
+			if (!acc[category]) {
+				acc[category] = 0;
+			}
+			acc[category] += parseFloat(amount);
+			return acc;
+		}, {});
 
-  const data = {
-    labels: ["Shopping", "Groceries", "Electronics"],
-    datasets: [
-      {
-        label: "# of transactions",
-        data: [12, 19, 3], // Data points
-        backgroundColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-        ],
-        borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+		// Prepare data for the chart
+		const labels = Object.keys(categoryTotals);
+		const data = Object.values(categoryTotals);
 
-  // Chart options (optional)
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top", // Position of the legend
-      },
-    },
-  };
+		setChartData({
+			labels,
+			datasets: [
+				{
+					label: "Amount",
+					data,
+					backgroundColor: [
+						"rgba(255, 99, 132, 1)",
+						"rgba(54, 162, 235, 1)",
+						"rgba(255, 206, 86, 1)",
+						"rgba(75, 192, 192, 1)",
+						"rgba(153, 102, 255, 1)",
+						"rgba(255, 159, 64, 1)"
+					],
+					borderColor: [
+						"rgba(255, 99, 132, 1)",
+						"rgba(54, 162, 235, 1)",
+						"rgba(255, 206, 86, 1)",
+						"rgba(75, 192, 192, 1)",
+						"rgba(153, 102, 255, 1)",
+						"rgba(255, 159, 64, 1)"
+					],
+					borderWidth: 1
+				}
+			]
+		});
+	}, [transactions]);
 
-  const bardata = {
-    labels: [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ], // X-axis labels
-    datasets: [
-      {
-        label: "Spending in 2023", // Label for the dataset
-        data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
-        backgroundColor: ["#4f646f"], // Bar color
-        // borderColor: "rgba(75, 192, 192, 1)", // Border color
-        borderWidth: 1, // Border width for bars
-        borderRadius: 10,
-      },
-    ],
-  };
+	// Chart options (optional)
+	const options = {
+		responsive: true,
+		plugins: {
+			legend: {
+				position: "bottom" // Position of the legend
+			}
+		}
+	};
 
+	const bardata = {
+		labels: [
+			"January",
+			"February",
+			"March",
+			"April",
+			"May",
+			"June",
+			"July",
+			"August",
+			"September",
+			"October",
+			"November",
+			"December"
+		], // X-axis labels
+		datasets: [
+			{
+				label: "Spending in 2023", // Label for the dataset
+				data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
+				backgroundColor: ["#FC8050"], // Bar color
+				borderWidth: 1, // Border width for bars
+				borderRadius: 10
+			}
+		]
+	};
 
-  // Chart options (optional)
-  const baroptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false,
-        position: "top", // Position of the legend
-      },
-      title: {
-        display: false,
-        text: "Monthly Sales for 2023", // Title of the chart
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true, // Y-axis starts at 0
-        grid: {
-          display: false,
-        },
-      },
-      x: {
-        grid: {
-          display: false, // This hides the grid lines on the x-axis
-        },
-      },
-    },
-  };
+	// Chart options (optional)
+	const baroptions = {
+		responsive: true,
+		maintainAspectRatio: false,
+		plugins: {
+			legend: {
+				display: false,
+				position: "top" // Position of the legend
+			},
+			title: {
+				display: false,
+				text: "Monthly Sales for 2023" // Title of the chart
+			}
+		},
+		scales: {
+			y: {
+				beginAtZero: true, // Y-axis starts at 0
+				grid: {
+					display: false
+				}
+			},
+			x: {
+				grid: {
+					display: false // This hides the grid lines on the x-axis
+				}
+			}
+		}
+	};
 
-  const handleQueryChange = (event) => {
-    setQuery(event.target.value);
-  };
-
-  const submitQuery = async () => {
-    const data = await fetch("http://localhost:3000/users/2/query", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzIzOTczMDIzLCJleHAiOjE3MjM5NzY2MjN9.nlS5nGqM4MLdANbbTiCfrmGaf6CwDbMweNcUBvjlBbQ",
-      },
-      body: JSON.stringify({ query }),
-    });
-    const jsonData = await data.json();
-    setResponse(jsonData.answer);
-  };
+	const totalAmount = transactions.reduce((sum, transaction) => {
+		return sum + parseFloat(transaction.amount); // Make sure to convert the amount to a number
+	}, 0);
 
 	return (
 		<>
 			<div className="header">
 				<h3>Ruby</h3>
-				<h2>Good Evening, Jivi</h2>
+				<h2>{getGreeting(userDetails.username, hour)}</h2>
 			</div>
 			<div className="dashboard">
 				<DashboardSection title="Card Details">
-					<div className="card">
-						<div className="name">DISCOVER</div>
-						<div className="number">**** **** **** 4644</div>
-						<div className="additional-details">
-							<span className="expiration">4/29</span>
-							<span className="cvv">931</span>
+					<div className="cards">
+						<div className="card">
+							<div className="name">DISCOVER</div>
+							<div className="number">**** **** **** 4644</div>
+							<div className="additional-details">
+								<span className="expiration">4/29</span>
+								<span className="cvv">931</span>
+							</div>
 						</div>
 					</div>
+
 					<div className="summary">
 						<div className="balance">
 							<h6>Remaining Balance</h6>
@@ -266,11 +309,7 @@ function App() {
 				</DashboardSection>
 				<DashboardSection title="Ask about your Finances">
 					<div className="chat-box">
-						<div
-							className="prompt"
-							ref={promptRef}
-							style={{ maxHeight: "300px", overflowY: "auto" }}
-						>
+						<div className="prompt" ref={promptRef}>
 							{messages.map((message, index) => (
 								<p
 									key={index}
@@ -287,7 +326,7 @@ function App() {
 								placeholder="Ex. How much did I spent last month on food?"
 							></input>
 							<button className="submit-button" type="submit">
-								Submit
+								Send
 							</button>
 						</form>
 					</div>
