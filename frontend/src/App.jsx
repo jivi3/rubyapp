@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { Pie, Bar } from "react-chartjs-2";
 import {
@@ -23,14 +23,102 @@ ChartJS.register(
   Legend
 );
 
-function App() {
-  const [transactions, setTransactions] = useState([]);
-  const [query, setQuery] = useState("");
-  const [response, setResponse] = useState("");
+const formatCurrency = (number) => {
+	if (number < 0) {
+		return new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD"
+		}).format(number * -1);
+	} else {
+		return new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD"
+		}).format(number);
+	}
+};
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+function App() {
+	const [transactions, setTransactions] = useState([]);
+	const [chartData, setChartData] = useState({
+		labels: [],
+		datasets: [
+			{
+				label: "Amount",
+				data: [],
+				backgroundColor: [],
+				borderColor: [],
+				borderWidth: 1
+			}
+		]
+	});
+	const [inputValue, setInputValue] = useState("");
+	const [messages, setMessages] = useState([
+		{ text: "Ask me anything about your transactions", type: "response" } // Initial prompt message
+	]);
+
+	const promptRef = useRef(null); // Ref to track the .prompt container
+
+	// Function to keep the chat box scrolled to the bottom
+	const scrollToBottom = () => {
+		const prompt = promptRef.current;
+		if (prompt) {
+			prompt.scrollTop = prompt.scrollHeight; // Manually set the scroll position
+		}
+	};
+
+	useEffect(() => {
+		scrollToBottom(); // Scroll to bottom whenever messages change
+	}, [messages]);
+
+	const handleSubmit = async (event) => {
+		event.preventDefault(); // Prevents the form from refreshing the page
+		setMessages((prevMessages) => [
+			...prevMessages,
+			{ text: inputValue, type: "user" }
+		]);
+		try {
+			const response = await fetch("http://192.168.1.75:3000/users/3/query", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					"x-auth-token":
+						"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTc5ODkyLCJleHAiOjE3MjM5ODM0OTJ9.bcvu1aKW9qO59K_1ngtYXmmkCI-_jb7i9Cy8KtJ3qw8"
+				},
+				body: JSON.stringify({
+					query: inputValue // Send the input value in the request body
+				})
+			});
+
+			const data = await response.json(); // Parse the response as JSON
+			setMessages((prevMessages) => [
+				...prevMessages,
+				{ text: data.answer, type: "response" }
+			]);
+		} catch (error) {
+			console.error("Error:", error); // Handle any errors
+		}
+		setInputValue("");
+	};
+
+	useEffect(() => {
+		const fetchTransactions = async () => {
+			// Fetch transactions from the backend
+			const response = await fetch(
+				"http://192.168.1.75:3000/users/3/transactions",
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						"x-auth-token":
+							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTc5ODkyLCJleHAiOjE3MjM5ODM0OTJ9.bcvu1aKW9qO59K_1ngtYXmmkCI-_jb7i9Cy8KtJ3qw8"
+					}
+				}
+			);
+			const data = await response.json();
+			setTransactions(data);
+		};
+		fetchTransactions();
+	}, []);
 
   const fetchTransactions = async () => {
     const response = await fetch("http://localhost:3000/users/2/transactions", {
@@ -102,6 +190,7 @@ function App() {
     ],
   };
 
+
   // Chart options (optional)
   const baroptions = {
     responsive: true,
@@ -148,64 +237,99 @@ function App() {
     setResponse(jsonData.answer);
   };
 
-  console.log("res", response);
-
-  return (
-    <>
-      <div className="header">
-        <h3>Ruby</h3>
-        <h2>Good Evening, Jivi</h2>
-      </div>
-      <div className="dashboard">
-        <DashboardSection title="Card Details">
-          <div className="card">
-            <div className="name">DISCOVER</div>
-            <div className="number">**** **** **** 4644</div>
-            <div className="additional-details">
-              <span className="expiration">4/29</span>
-              <span className="cvv">931</span>
-            </div>
-          </div>
-          <div className="summary">
-            <div className="balance">
-              <h6>Remaining Balance</h6>
-              <h2>{transactions && transactions[0]?.amount}</h2>
-            </div>
-            <div className="spent">
-              <h6>Spent this Month</h6>
-              <h2>$69.69</h2>
-            </div>
-          </div>
-        </DashboardSection>
-        <DashboardSection title="Ask about your Finances">
-          <div className="chat-box">
-            <div className="prompt">
-              <p>Ask me anything about your transactions</p>
-            </div>
-            <input
-              value={query}
-              onChange={handleQueryChange}
-              placeholder="Ex. How much did I spend last month on food?"
-            />
-            <button onClick={submitQuery}>Submit</button>
-            <div>
-              <p>{response}</p>
-            </div>
-          </div>
-        </DashboardSection>
-        <DashboardSection title="Transaction Summaries">
-          <div className="transaction-charts">
-            <div className="pie-chart">
-              <Pie className="pie" data={data} options={options} />
-            </div>
-            <div className="bar-chart">
-              <Bar className="bar" data={bardata} options={baroptions} />
-            </div>
-          </div>
-        </DashboardSection>
-      </div>
-    </>
-  );
+	return (
+		<>
+			<div className="header">
+				<h3>Ruby</h3>
+				<h2>Good Evening, Jivi</h2>
+			</div>
+			<div className="dashboard">
+				<DashboardSection title="Card Details">
+					<div className="card">
+						<div className="name">DISCOVER</div>
+						<div className="number">**** **** **** 4644</div>
+						<div className="additional-details">
+							<span className="expiration">4/29</span>
+							<span className="cvv">931</span>
+						</div>
+					</div>
+					<div className="summary">
+						<div className="balance">
+							<h6>Remaining Balance</h6>
+							<h2>{transactions && formatCurrency(transactions[0]?.amount)}</h2>
+						</div>
+						<div className="spent">
+							<h6>Spent this Month</h6>
+							<h2>{totalAmount && formatCurrency(totalAmount)}</h2>
+						</div>
+					</div>
+				</DashboardSection>
+				<DashboardSection title="Ask about your Finances">
+					<div className="chat-box">
+						<div
+							className="prompt"
+							ref={promptRef}
+							style={{ maxHeight: "300px", overflowY: "auto" }}
+						>
+							{messages.map((message, index) => (
+								<p
+									key={index}
+									className={`message ${message.type}`} // You can use this class to style user and response messages differently
+								>
+									{message.text}
+								</p>
+							))}
+						</div>
+						<form className="chat-form" onSubmit={handleSubmit}>
+							<input
+								value={inputValue}
+								onChange={(e) => setInputValue(e.target.value)}
+								placeholder="Ex. How much did I spent last month on food?"
+							></input>
+							<button className="submit-button" type="submit">
+								Submit
+							</button>
+						</form>
+					</div>
+				</DashboardSection>
+				<DashboardSection title="Transaction Summaries">
+					<div className="transaction-charts">
+						<div className="pie-chart">
+							<Pie className="pie" data={chartData} options={options} />
+						</div>
+						<div className="bar-chart">
+							<Bar className="bar" data={bardata} options={baroptions} />
+						</div>
+					</div>
+				</DashboardSection>
+				<DashboardSection title="Transactions">
+					<div className="transactions">
+						<table>
+							<thead>
+								<tr>
+									<th>Merchant</th>
+									<th>Category</th>
+									<th>Amount</th>
+									<th>Date</th>
+								</tr>
+							</thead>
+							<tbody>
+								{transactions &&
+									transactions?.map((transaction) => (
+										<tr key={transaction.transaction_id}>
+											<td>{transaction.merchant}</td>
+											<td>{transaction.category}</td>
+											<td>{formatCurrency(transaction.amount)}</td>
+											<td>{transaction.date.slice(0, 10)}</td>
+										</tr>
+									))}
+							</tbody>
+						</table>
+					</div>
+				</DashboardSection>
+			</div>
+		</>
+	);
 }
 
 export default App;
