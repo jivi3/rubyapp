@@ -88,7 +88,7 @@ function App() {
 			const storedToken = localStorage.getItem("token");
 			const storedUserId = localStorage.getItem("user_id");
 			const response = await fetch(
-				`http://192.168.1.75:3000/users/${storedUserId}/transactions`,
+				`http://localhost:3000/users/${storedUserId}/transactions`,
 				{
 					method: "GET",
 					headers: {
@@ -189,7 +189,7 @@ function App() {
 		const user_id = localStorage.getItem("user_id");
 		try {
 			const response = await fetch(
-				`http://192.168.1.75:3000/users/${user_id}/transactions`,
+				`http://localhost:3000/users/${user_id}/transactions`,
 				{
 					method: "POST",
 					headers: {
@@ -228,7 +228,7 @@ function App() {
 			const storedToken = localStorage.getItem("token");
 			const storedUserId = localStorage.getItem("user_id");
 			const response = await fetch(
-				`http://192.168.1.75:3000/users/${storedUserId}`,
+				`http://localhost:3000/users/${storedUserId}`,
 				{
 					method: "GET",
 					headers: {
@@ -254,7 +254,7 @@ function App() {
 		]);
 		try {
 			const response = await fetch(
-				`http://192.168.1.75:3000/users/${storedUserId}/query`,
+				`http://localhost:3000/users/${storedUserId}/query`,
 				{
 					method: "POST",
 					headers: {
@@ -284,7 +284,7 @@ function App() {
 			const storedToken = localStorage.getItem("token");
 			const storedUserId = localStorage.getItem("user_id");
 			const response = await fetch(
-				`http://192.168.1.75:3000/users/${storedUserId}/transactions`,
+				`http://localhost:3000/users/${storedUserId}/transactions`,
 				{
 					method: "GET",
 					headers: {

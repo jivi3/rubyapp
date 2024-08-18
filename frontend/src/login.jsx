@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import "./login.css";
 function Login() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -35,71 +35,6 @@ function Login() {
 
 	return (
 		<>
-			<style>{`
-        body {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          height: 100vh;
-          margin: 0;
-          background-color: #f7f7f7;
-          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .container {
-          width: 100%;
-          max-width: 360px;
-          padding: 40px;
-          background-color: white;
-          border-radius: 8px;
-          box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-          text-align: center;
-        }
-
-        .form {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .input, .button {
-          padding: 12px 20px;
-          margin-bottom: 10px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-        }
-
-        .input:focus {
-          border-color: #6658f6;
-          outline: none;
-        }
-
-        .button {
-          background-color: #6658f6;
-          color: white;
-          border: none;
-          cursor: pointer;
-          font-weight: bold;
-          text-transform: uppercase;
-          transition: background-color 0.3s ease;
-        }
-
-        .button:hover {
-          background-color: #5848c2;
-        }
-
-        .error {
-          color: red;
-          margin-top: 10px;
-          font-size: 0.9rem;
-        }
-
-        .label {
-          text-align: left;
-          font-weight: normal;
-          color: #666;
-          margin-bottom: 5px;
-        }
-      `}</style>
 			<div className="container">
 				<h2>Login</h2>
 				<form onSubmit={handleLogin} className="form">
