@@ -52,6 +52,11 @@ h6 {
 	font-weight: 400;
 }
 
+th {
+	text-align: left;
+	min-width: 200px;
+}
+
 a {
 	font-weight: 500;
 	color: #646cff;

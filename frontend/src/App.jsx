@@ -26,6 +26,18 @@ ChartJS.register(
 
 function App() {
 	const [transactions, setTransactions] = useState([]);
+	const [chartData, setChartData] = useState({
+		labels: [],
+		datasets: [
+			{
+				label: "Amount",
+				data: [],
+				backgroundColor: [],
+				borderColor: [],
+				borderWidth: 1
+			}
+		]
+	});
 
 	useEffect(() => {
 		const fetchTransactions = async () => {
@@ -37,7 +49,7 @@ function App() {
 					headers: {
 						"Content-Type": "application/json",
 						"x-auth-token":
-							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTY4MDcxLCJleHAiOjE3MjM5NzE2NzF9.l-7wdHJh0mVtRe-cB76h1SUZ61tRpzlmlWf1Y0SojoM"
+							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTcxODE0LCJleHAiOjE3MjM5NzU0MTR9.8q9qq5IehUHhjU5snhH4rk8enu-9xcbvUeJAximz8-I"
 					}
 				}
 			);
@@ -47,35 +59,55 @@ function App() {
 		fetchTransactions();
 	}, []);
 
-	console.log("transactions", transactions);
-
-	const data = {
-		labels: ["Shopping", "Groceries", "Electronics"],
-		datasets: [
-			{
-				label: "# of transactions",
-				data: [12, 19, 3], // Data points
-				backgroundColor: [
-					"rgba(255, 99, 132, 1)",
-					"rgba(54, 162, 235, 1)",
-					"rgba(255, 206, 86, 1)"
-				],
-				borderColor: [
-					"rgba(255, 99, 132, 1)",
-					"rgba(54, 162, 235, 1)",
-					"rgba(255, 206, 86, 1)"
-				],
-				borderWidth: 1
+	useEffect(() => {
+		// Process the transactions to group by category
+		const categoryTotals = transactions.reduce((acc, transaction) => {
+			const { category, amount } = transaction;
+			if (!acc[category]) {
+				acc[category] = 0;
 			}
-		]
-	};
+			acc[category] += parseFloat(amount);
+			return acc;
+		}, {});
+
+		// Prepare data for the chart
+		const labels = Object.keys(categoryTotals);
+		const data = Object.values(categoryTotals);
+
+		setChartData({
+			labels,
+			datasets: [
+				{
+					label: "Amount",
+					data,
+					backgroundColor: [
+						"rgba(255, 99, 132, 1)",
+						"rgba(54, 162, 235, 1)",
+						"rgba(255, 206, 86, 1)",
+						"rgba(75, 192, 192, 1)",
+						"rgba(153, 102, 255, 1)",
+						"rgba(255, 159, 64, 1)"
+					],
+					borderColor: [
+						"rgba(255, 99, 132, 1)",
+						"rgba(54, 162, 235, 1)",
+						"rgba(255, 206, 86, 1)",
+						"rgba(75, 192, 192, 1)",
+						"rgba(153, 102, 255, 1)",
+						"rgba(255, 159, 64, 1)"
+					],
+					borderWidth: 1
+				}
+			]
+		});
+	}, [transactions]);
 
 	// Chart options (optional)
 	const options = {
 		responsive: true,
 		plugins: {
 			legend: {
-				position: "top" // Position of the legend
+				position: "bottom" // Position of the legend
 			}
 		}
 	};
@@ -136,6 +168,10 @@ function App() {
 		}
 	};
 
+	const totalAmount = transactions.reduce((sum, transaction) => {
+		return sum + parseFloat(transaction.amount); // Make sure to convert the amount to a number
+	}, 0);
+
 	return (
 		<>
 			<div className="header">
@@ -159,7 +195,7 @@ function App() {
 						</div>
 						<div className="spent">
 							<h6>Spent this Month</h6>
-							<h2>$69.69</h2>
+							<h2>{totalAmount && totalAmount}</h2>
 						</div>
 					</div>
 				</DashboardSection>
@@ -176,7 +212,7 @@ function App() {
 				<DashboardSection title="Transaction Summaries">
 					<div className="transaction-charts">
 						<div className="pie-chart">
-							<Pie className="pie" data={data} options={options} />
+							<Pie className="pie" data={chartData} options={options} />
 						</div>
 						<div className="bar-chart">
 							<Bar
@@ -186,6 +222,31 @@ function App() {
 								// style={{ minWidth:  }}
 							/>
 						</div>
+					</div>
+				</DashboardSection>
+				<DashboardSection title="Transactions">
+					<div className="transactions">
+						<table>
+							<thead>
+								<tr>
+									<th>Merchant</th>
+									<th>Category</th>
+									<th>Amount</th>
+									<th>Date</th>
+								</tr>
+							</thead>
+							<tbody>
+								{transactions &&
+									transactions?.map((transaction) => (
+										<tr key={transaction.transaction_id}>
+											<td>{transaction.merchant}</td>
+											<td>{transaction.category}</td>
+											<td>{transaction.amount}</td>
+											<td>{transaction.date.slice(0, 10)}</td>
+										</tr>
+									))}
+							</tbody>
+						</table>
 					</div>
 				</DashboardSection>
 			</div>
