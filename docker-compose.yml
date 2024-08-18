@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Backend Service
+  backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - JWT_SECRET=f56b280bba90f6274eee1e2b1aa53990f51b739ea69a07b08233d0019fe60fc
+    depends_on:
+      - db
+    volumes:
+      - /usr/src/rubyapp/backend
+
+  # Frontend Service
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - /usr/src/rubyapp/frontend/src
+      - /usr/src/rubyapp/frontend/public
+
+
+    environment:
+      - NODE_ENV=development
+
+  # PostgreSQL Database Service
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: expensetrackerDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
