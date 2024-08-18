@@ -84,6 +84,72 @@ function App() {
 		}
 	};
 
+	const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
+	const [transactionData, setTransactionData] = useState({
+		merchantName: "",
+		amount: "",
+		category: "",
+		date: new Date().toISOString().slice(0, 10) // Auto-populate today's date
+	});
+
+	const addTransaction = () => {
+		setIsModalOpen(true); // Open the modal when the button is clicked
+	};
+
+	const handleCloseModal = () => {
+		setIsModalOpen(false); // Close the modal
+		setTransactionData({
+			merchantName: "",
+			amount: "",
+			category: "",
+			date: new Date().toISOString().slice(0, 10)
+		}); // Reset the form fields when closing
+	};
+
+	const handleInputChange = (e) => {
+		const { name, value } = e.target;
+		setTransactionData((prevData) => ({
+			...prevData,
+			[name]: value
+		}));
+	};
+
+	const handleFormSubmit = async (e) => {
+		e.preventDefault();
+
+		const token = localStorage.getItem("token");
+		const user_id = localStorage.getItem("user_id");
+		try {
+			const response = await fetch(
+				`http://192.168.1.75:3000/users/${user_id}/transactions`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						"x-auth-token": `${token}`
+					},
+					body: JSON.stringify({
+						merchant: transactionData.merchantName,
+						amount: transactionData.amount * -1,
+						category: transactionData.category,
+						date: transactionData.date
+					})
+				}
+			);
+
+			if (response.ok) {
+				const newTransaction = await response.json();
+				setTransactions((prevTransactions) => [
+					...prevTransactions,
+					newTransaction
+				]); // Add the new transaction to the state
+				handleCloseModal(); // Close the modal on success
+			}
+		} catch (error) {
+			console.error("Error adding transaction:", error);
+		}
+	};
+
 	useEffect(() => {
 		scrollToBottom(); // Scroll to bottom whenever messages change
 	}, [messages]);
@@ -279,9 +345,72 @@ function App() {
 
 	return (
 		<>
+			{isModalOpen && (
+				<div className="modal">
+					<div className="modal-content">
+						<h2>Add a New Transaction</h2>
+						<form onSubmit={handleFormSubmit}>
+							<div className="form-group">
+								<label>Merchant Name</label>
+								<input
+									type="text"
+									name="merchantName"
+									value={transactionData.merchantName}
+									onChange={handleInputChange}
+									required
+								/>
+							</div>
+							<div className="form-group">
+								<label>Amount</label>
+								<input
+									type="number"
+									name="amount"
+									value={transactionData.amount}
+									onChange={handleInputChange}
+									required
+								/>
+							</div>
+							<div className="form-group">
+								<label>Category</label>
+								<input
+									type="text"
+									name="category"
+									value={transactionData.category}
+									onChange={handleInputChange}
+									required
+								/>
+							</div>
+							<div className="form-group">
+								<label>Date</label>
+								<input
+									type="date"
+									name="date"
+									value={transactionData.date}
+									onChange={handleInputChange}
+									required
+								/>
+							</div>
+							<div className="form-group">
+								<button type="submit">Add Transaction </button>
+								<button type="button" onClick={handleCloseModal}>
+									Cancel
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			)}
 			<div className="header">
-				<h3>Ruby</h3>
-				<h2>{getGreeting(userDetails.username, hour)}</h2>
+				<div className="left">
+					<h3>Ruby</h3>
+					<h2>{getGreeting(userDetails.username, hour)}</h2>
+				</div>
+				<div className="right">
+					<a className="add-button" onClick={addTransaction}>
+						Add Transaction
+					</a>
+					<a href="/login">Logout</a>
+				</div>
 			</div>
 			<div className="dashboard">
 				<DashboardSection title="Card Details">
@@ -293,6 +422,9 @@ function App() {
 								<span className="expiration">4/29</span>
 								<span className="cvv">931</span>
 							</div>
+						</div>
+						<div className="add-transaction">
+							<a onClick={addTransaction}>Add Transaction</a>
 						</div>
 					</div>
 
