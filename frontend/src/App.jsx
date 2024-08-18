@@ -1,4 +1,4 @@
-// import { useState } from 'react'
+import { useState, useEffect } from "react";
 import "./App.css";
 import { Pie, Bar } from "react-chartjs-2";
 import {
@@ -12,6 +12,7 @@ import {
 	Legend
 } from "chart.js";
 import DashboardSection from "./components/DashboardSection";
+// import { useState } from "react";
 
 ChartJS.register(
 	CategoryScale,
@@ -24,6 +25,30 @@ ChartJS.register(
 );
 
 function App() {
+	const [transactions, setTransactions] = useState([]);
+
+	useEffect(() => {
+		const fetchTransactions = async () => {
+			// Fetch transactions from the backend
+			const response = await fetch(
+				"http://192.168.1.75:3000/users/3/transactions",
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						"x-auth-token":
+							"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzIzOTY4MDcxLCJleHAiOjE3MjM5NzE2NzF9.l-7wdHJh0mVtRe-cB76h1SUZ61tRpzlmlWf1Y0SojoM"
+					}
+				}
+			);
+			const data = await response.json();
+			setTransactions(data);
+		};
+		fetchTransactions();
+	}, []);
+
+	console.log("transactions", transactions);
+
 	const data = {
 		labels: ["Shopping", "Groceries", "Electronics"],
 		datasets: [
@@ -130,7 +155,7 @@ function App() {
 					<div className="summary">
 						<div className="balance">
 							<h6>Remaining Balance</h6>
-							<h2>$6969.69</h2>
+							<h2>{transactions && transactions[0]?.amount}</h2>
 						</div>
 						<div className="spent">
 							<h6>Spent this Month</h6>
