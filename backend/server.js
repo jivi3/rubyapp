@@ -207,6 +207,21 @@ app.delete("/transactions/:transactionId", auth, async (req, res) => {
   }
 });
 
+// Retrieve user details
+app.get('/users/:userId', auth, async (req, res) => {
+    const { userId } = req.params;
+    try {
+        const user = await pool.query('SELECT username, email FROM users WHERE user_id = $1', [userId]);
+        if (user.rows.length === 0) {
+            return res.status(404).json({ msg: 'Username not found' });
+        }
+        res.status(200).json({ username: user.rows[0].username, email: user.rows[0].email });
+    } catch (err) {
+        console.error('Error fetching username', err.stack);
+        res.status(500).json({ error: 'Failed to fetch username' });
+    }
+});
+
 // Endpoint to handle queries about expenses
 app.post('/users/:userId/query', auth, async (req, res) => {
     const { userId } = req.params;
