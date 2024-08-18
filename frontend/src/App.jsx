@@ -2,25 +2,25 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 import { Pie, Bar } from "react-chartjs-2";
 import {
-	Chart as ChartJS,
-	Title,
-	BarElement,
-	CategoryScale,
-	LinearScale,
-	ArcElement,
-	Tooltip,
-	Legend
+  Chart as ChartJS,
+  Title,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement,
+  Tooltip,
+  Legend,
 } from "chart.js";
 import DashboardSection from "./components/DashboardSection";
 
 ChartJS.register(
-	CategoryScale,
-	LinearScale,
-	BarElement,
-	Title,
-	ArcElement,
-	Tooltip,
-	Legend
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  ArcElement,
+  Tooltip,
+  Legend
 );
 
 const formatCurrency = (number) => {
@@ -120,117 +120,122 @@ function App() {
 		fetchTransactions();
 	}, []);
 
-	useEffect(() => {
-		// Process the transactions to group by category
-		const categoryTotals = transactions.reduce((acc, transaction) => {
-			const { category, amount } = transaction;
-			if (!acc[category]) {
-				acc[category] = 0;
-			}
-			acc[category] += parseFloat(amount);
-			return acc;
-		}, {});
+  const fetchTransactions = async () => {
+    const response = await fetch("http://localhost:3000/users/2/transactions", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": "your_jwt_token_here",
+      },
+    });
+    const data = await response.json();
+    setTransactions(data);
+  };
 
-		// Prepare data for the chart
-		const labels = Object.keys(categoryTotals);
-		const data = Object.values(categoryTotals);
+  const data = {
+    labels: ["Shopping", "Groceries", "Electronics"],
+    datasets: [
+      {
+        label: "# of transactions",
+        data: [12, 19, 3], // Data points
+        backgroundColor: [
+          "rgba(255, 99, 132, 1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+        ],
+        borderColor: [
+          "rgba(255, 99, 132, 1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
 
-		setChartData({
-			labels,
-			datasets: [
-				{
-					label: "Amount",
-					data,
-					backgroundColor: [
-						"rgba(255, 99, 132, 1)",
-						"rgba(54, 162, 235, 1)",
-						"rgba(255, 206, 86, 1)",
-						"rgba(75, 192, 192, 1)",
-						"rgba(153, 102, 255, 1)",
-						"rgba(255, 159, 64, 1)"
-					],
-					borderColor: [
-						"rgba(255, 99, 132, 1)",
-						"rgba(54, 162, 235, 1)",
-						"rgba(255, 206, 86, 1)",
-						"rgba(75, 192, 192, 1)",
-						"rgba(153, 102, 255, 1)",
-						"rgba(255, 159, 64, 1)"
-					],
-					borderWidth: 1
-				}
-			]
-		});
-	}, [transactions]);
+  // Chart options (optional)
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top", // Position of the legend
+      },
+    },
+  };
 
-	// Chart options (optional)
-	const options = {
-		responsive: true,
-		plugins: {
-			legend: {
-				position: "bottom" // Position of the legend
-			}
-		}
-	};
+  const bardata = {
+    labels: [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ], // X-axis labels
+    datasets: [
+      {
+        label: "Spending in 2023", // Label for the dataset
+        data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
+        backgroundColor: ["#4f646f"], // Bar color
+        // borderColor: "rgba(75, 192, 192, 1)", // Border color
+        borderWidth: 1, // Border width for bars
+        borderRadius: 10,
+      },
+    ],
+  };
 
-	const bardata = {
-		labels: [
-			"January",
-			"February",
-			"March",
-			"April",
-			"May",
-			"June",
-			"July",
-			"August",
-			"September",
-			"October",
-			"November",
-			"December"
-		], // X-axis labels
-		datasets: [
-			{
-				label: "Spending in 2023", // Label for the dataset
-				data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
-				backgroundColor: ["#4f646f"], // Bar color
-				borderWidth: 1, // Border width for bars
-				borderRadius: 10
-			}
-		]
-	};
 
-	// Chart options (optional)
-	const baroptions = {
-		responsive: true,
-		maintainAspectRatio: false,
-		plugins: {
-			legend: {
-				display: false,
-				position: "top" // Position of the legend
-			},
-			title: {
-				display: false,
-				text: "Monthly Sales for 2023" // Title of the chart
-			}
-		},
-		scales: {
-			y: {
-				beginAtZero: true, // Y-axis starts at 0
-				grid: {
-					display: false
-				}
-			},
-			x: {
-				grid: {
-					display: false // This hides the grid lines on the x-axis
-				}
-			}
-		}
-	};
+  // Chart options (optional)
+  const baroptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: false,
+        position: "top", // Position of the legend
+      },
+      title: {
+        display: false,
+        text: "Monthly Sales for 2023", // Title of the chart
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true, // Y-axis starts at 0
+        grid: {
+          display: false,
+        },
+      },
+      x: {
+        grid: {
+          display: false, // This hides the grid lines on the x-axis
+        },
+      },
+    },
+  };
 
-	const totalAmount = transactions.reduce((sum, transaction) => {
-		return sum + parseFloat(transaction.amount); // Make sure to convert the amount to a number
-	}, 0);
+  const handleQueryChange = (event) => {
+    setQuery(event.target.value);
+  };
+
+  const submitQuery = async () => {
+    const data = await fetch("http://localhost:3000/users/2/query", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-auth-token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWF0IjoxNzIzOTczMDIzLCJleHAiOjE3MjM5NzY2MjN9.nlS5nGqM4MLdANbbTiCfrmGaf6CwDbMweNcUBvjlBbQ",
+      },
+      body: JSON.stringify({ query }),
+    });
+    const jsonData = await data.json();
+    setResponse(jsonData.answer);
+  };
 
 	return (
 		<>
