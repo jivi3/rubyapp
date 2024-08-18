@@ -15,11 +15,11 @@ const openai = new OpenAI({
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "f56b280bba90f6274eee1e2b1aa53990f51b739ea69a07b08233d0019fe60fcf";
 
 app.use(
 	cors({
-		origin: "http://localhost:5173", // Replace with your frontend URL
+		origin: "http://ruby-app-env.eba-xce9i9zm.us-east-1.elasticbeanstalk.com", // Replace with your frontend URL
 		methods: ["GET", "POST"], // Add other methods if needed
 		allowedHeaders: ["Content-Type", "x-auth-token"] // Add other headers if needed
 	})
@@ -57,33 +57,36 @@ app.get("/test-db", async (req, res) => {
 
 // User Registration
 app.post("/register", async (req, res) => {
-	const { username, email, password } = req.body;
-	try {
-		const userExists = await pool.query(
-			"SELECT * FROM users WHERE email = $1",
-			[email]
-		);
-		if (userExists.rows.length > 0) {
-			return res.status(400).json({ msg: "User already exists" });
-		}
+    const { username, email, password } = req.body;
 
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+    if (!username || !email || !password) {
+        return res.status(400).json({ msg: "All fields are required" });
+    }
 
-		const newUser = await pool.query(
-			"INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING user_id, username, email",
-			[username, email, hashedPassword]
-		);
+    try {
+        const userExists = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ msg: "User already exists" });
+        }
 
-		const token = jwt.sign({ id: newUser.rows[0].user_id }, JWT_SECRET, {
-			expiresIn: "1h"
-		});
-		res.status(201).json({ token, user: newUser.rows[0] });
-	} catch (err) {
-		console.error("Error registering user", err.stack);
-		res.status(500).json({ error: "Failed to register user" });
-	}
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
+
+        const newUser = await pool.query(
+            "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING user_id, username, email",
+            [username, email, hashedPassword]
+        );
+
+        const token = jwt.sign({ id: newUser.rows[0].user_id }, JWT_SECRET, {
+            expiresIn: "1h"
+        });
+        res.status(201).json({ token, user: newUser.rows[0] });
+    } catch (err) {
+        console.error("Error registering user", err);
+        res.status(500).json({ error: "Failed to register user", details: err.message });
+    }
 });
+
 
 // User Login
 app.post("/login", async (req, res) => {
