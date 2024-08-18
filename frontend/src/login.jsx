@@ -9,7 +9,7 @@ function Login() {
 
 	const handleLogin = async (event) => {
 		event.preventDefault();
-		fetch("http://localhost:3000/login", {
+		fetch("http://ruby-app-env.eba-xce9i9zm.us-east-1.elasticbeanstalk.com/login", {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json"
