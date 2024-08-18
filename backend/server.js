@@ -50,33 +50,28 @@ app.get("/test-db", async (req, res) => {
 });
 
 // User Registration
-app.post("/register", async (req, res) => {
-	const { username, email, password } = req.body;
-	try {
-		const userExists = await pool.query(
-			"SELECT * FROM users WHERE email = $1",
-			[email]
-		);
-		if (userExists.rows.length > 0) {
-			return res.status(400).json({ msg: "User already exists" });
-		}
+app.post('/register', async (req, res) => {
+    const { username, name, email, password } = req.body;
+    try {
+        const userExists = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userExists.rows.length > 0) {
+            return res.status(400).json({ msg: 'User already exists' });
+        }
 
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(password, salt);
 
-		const newUser = await pool.query(
-			"INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING user_id, username, email",
-			[username, email, hashedPassword]
-		);
+        const newUser = await pool.query(
+            'INSERT INTO users (username, name, email, password) VALUES ($1, $2, $3, $4) RETURNING user_id, name, username, email',
+            [username, name, email, hashedPassword]
+        );
 
-		const token = jwt.sign({ id: newUser.rows[0].user_id }, JWT_SECRET, {
-			expiresIn: "1h"
-		});
-		res.status(201).json({ token, user: newUser.rows[0] });
-	} catch (err) {
-		console.error("Error registering user", err.stack);
-		res.status(500).json({ error: "Failed to register user" });
-	}
+        const token = jwt.sign({ id: newUser.rows[0].user_id }, JWT_SECRET, { expiresIn: '1h' });
+        res.status(201).json({ token, user: newUser.rows[0] });
+    } catch (err) {
+        console.error('Error registering user', err.stack);
+        res.status(500).json({ error: 'Failed to register user' });
+    }
 });
 
 // User Login
