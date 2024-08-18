@@ -74,7 +74,7 @@ function App() {
 			{
 				label: "Spending in 2023", // Label for the dataset
 				data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
-				backgroundColor: ["#4d4ae1"], // Bar color
+				backgroundColor: ["#4f646f"], // Bar color
 				// borderColor: "rgba(75, 192, 192, 1)", // Border color
 				borderWidth: 1, // Border width for bars
 				borderRadius: 10
@@ -85,6 +85,7 @@ function App() {
 	// Chart options (optional)
 	const baroptions = {
 		responsive: true,
+		maintainAspectRatio: false,
 		plugins: {
 			legend: {
 				display: false,
@@ -112,31 +113,45 @@ function App() {
 
 	return (
 		<>
-			<h2>SpendRuby Expense Tracker</h2>
+			<div className="header">
+				<h3>Ruby</h3>
+				<h2>Good Evening, Jivi</h2>
+			</div>
 			<div className="dashboard">
 				<DashboardSection title="Card Details">
 					<div className="card">
-						<div className="name">Jivi Irivichetty</div>
-						<div className="number">4117 7440 8523 4644</div>
+						<div className="name">DISCOVER</div>
+						<div className="number">**** **** **** 4644</div>
 						<div className="additional-details">
 							<span className="expiration">4/29</span>
 							<span className="cvv">931</span>
 						</div>
 					</div>
+					<div className="summary">
+						<div className="balance">
+							<h6>Remaining Balance</h6>
+							<h2>$6969.69</h2>
+						</div>
+						<div className="spent">
+							<h6>Spent this Month</h6>
+							<h2>$69.69</h2>
+						</div>
+					</div>
 				</DashboardSection>
-				<DashboardSection title="Account Details">
-					<div className="remaining-balance">
-						<h5>Remaining Balance</h5>
-						<h2>$6969.69</h2>
-						<div className="ask">
+				<DashboardSection title="Ask about your Finances">
+					<div className="chat-box">
+						<div className="prompt">
 							<p>Ask me anything about your transactions</p>
 						</div>
+						{/* <div className="chat-input"> */}
+						<input placeholder="Ex. How much did I spent last month on food?"></input>
+						{/* </div> */}
 					</div>
 				</DashboardSection>
 				<DashboardSection title="Transaction Summaries">
 					<div className="transaction-charts">
 						<div className="pie-chart">
-							<Pie data={data} options={options} />
+							<Pie className="pie" data={data} options={options} />
 						</div>
 						<div className="bar-chart">
 							<Bar
