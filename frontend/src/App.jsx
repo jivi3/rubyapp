@@ -56,6 +56,74 @@ const getGreeting = (userName, hour) => {
 
 function App() {
 	const [transactions, setTransactions] = useState([]);
+
+	const [bardata, setBardata] = useState({
+		labels: [
+			"January",
+			"February",
+			"March",
+			"April",
+			"May",
+			"June",
+			"July",
+			"August",
+			"September",
+			"October",
+			"November",
+			"December"
+		],
+		datasets: [
+			{
+				label: "Total Spending",
+				data: new Array(12).fill(0), // Initialize with zeros for each month
+				backgroundColor: ["#FC8050"],
+				borderWidth: 1,
+				borderRadius: 10
+			}
+		]
+	});
+
+	useEffect(() => {
+		const fetchTransactions = async () => {
+			const storedToken = localStorage.getItem("token");
+			const storedUserId = localStorage.getItem("user_id");
+			const response = await fetch(
+				`http://192.168.1.75:3000/users/${storedUserId}/transactions`,
+				{
+					method: "GET",
+					headers: {
+						"Content-Type": "application/json",
+						"x-auth-token": `${storedToken}`
+					}
+				}
+			);
+			const data = await response.json();
+			setTransactions(data);
+		};
+		fetchTransactions();
+	}, []);
+
+	useEffect(() => {
+		// Calculate the total spending for each month
+		const monthlyTotals = transactions.reduce((acc, transaction) => {
+			const date = new Date(transaction.date);
+			const month = date.getMonth(); // Returns the month (0 = January, 11 = December)
+			acc[month] += parseFloat(transaction.amount);
+			return acc;
+		}, new Array(12).fill(0)); // Initialize an array with 12 elements set to 0
+
+		// Update the bar chart data
+		setBardata((prevData) => ({
+			...prevData,
+			datasets: [
+				{
+					...prevData.datasets[0],
+					data: monthlyTotals.map((total) => total * -1) // Invert the amount if needed
+				}
+			]
+		}));
+	}, [transactions]);
+
 	const [chartData, setChartData] = useState({
 		labels: [],
 		datasets: [
@@ -284,31 +352,31 @@ function App() {
 		}
 	};
 
-	const bardata = {
-		labels: [
-			"January",
-			"February",
-			"March",
-			"April",
-			"May",
-			"June",
-			"July",
-			"August",
-			"September",
-			"October",
-			"November",
-			"December"
-		], // X-axis labels
-		datasets: [
-			{
-				label: "Spending in 2023", // Label for the dataset
-				data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
-				backgroundColor: ["#FC8050"], // Bar color
-				borderWidth: 1, // Border width for bars
-				borderRadius: 10
-			}
-		]
-	};
+	// const bardata = {
+	// 	labels: [
+	// 		"January",
+	// 		"February",
+	// 		"March",
+	// 		"April",
+	// 		"May",
+	// 		"June",
+	// 		"July",
+	// 		"August",
+	// 		"September",
+	// 		"October",
+	// 		"November",
+	// 		"December"
+	// 	], // X-axis labels
+	// 	datasets: [
+	// 		{
+	// 			label: "Spending in 2023", // Label for the dataset
+	// 			data: [120, 190, 300, 500, 250, 320, 192, 282, 29, 644, 292, 428], // Data points
+	// 			backgroundColor: ["#FC8050"], // Bar color
+	// 			borderWidth: 1, // Border width for bars
+	// 			borderRadius: 10
+	// 		}
+	// 	]
+	// };
 
 	// Chart options (optional)
 	const baroptions = {
@@ -418,10 +486,6 @@ function App() {
 						<div className="card">
 							<div className="name">DISCOVER</div>
 							<div className="number">**** **** **** 4644</div>
-							<div className="additional-details">
-								<span className="expiration">4/29</span>
-								<span className="cvv">931</span>
-							</div>
 						</div>
 						<div className="add-transaction">
 							<a onClick={addTransaction}>Add Transaction</a>
