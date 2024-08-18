@@ -6,6 +6,25 @@ body {
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
+	align-items: center;
+}
+
+a {
+	text-decoration: none;
+	color: #000000;
+	transition: 0.1s;
+}
+
+a:hover {
+	color: rgba(0, 0, 0, 0.5);
+}
+
+.header {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+	width: 90svw;
 }
 
 .dashboard {
@@ -14,6 +33,7 @@ body {
 	flex-wrap: wrap;
 	justify-content: center;
 	gap: 20px;
+	width: 80%;
 	/* max-width: max-content; */
 }
 
@@ -33,6 +53,24 @@ body {
 .spent {
 	flex: 1 0 200px;
 	padding: 5px;
+}
+.cards {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	gap: 20px;
+}
+
+.add-transaction {
+	background: rgba(79, 100, 111, 0.5);
+	padding: 70px 20px;
+	border-radius: 20px;
+	text-align: center;
+}
+
+.add-transaction > * {
+	color: #ffffff;
 }
 
 .card {
@@ -60,7 +98,7 @@ body {
 }
 
 .submit-button {
-	background: #f0652f;
+	background: #fc8050;
 	width: fit-content;
 	border-radius: 40px;
 	height: 47.5px;
@@ -144,6 +182,20 @@ input {
 	align-self: flex-end;
 }
 
+.right {
+	display: flex;
+	gap: 10px;
+}
+
+.add-button {
+	color: #fc8050;
+}
+
+.add-button:hover {
+	color: #ffb792;
+	cursor: pointer;
+}
+
 .message.response {
 	background: #4f646f;
 	border-radius: 0px 10px 10px 10px;
@@ -170,7 +222,122 @@ input {
 .bar {
 	min-height: 300px;
 	max-height: 300px;
-	min-width: 800px;
+	min-width: 600px;
 	max-width: 100%;
 	/* width: 100%; */
 }
+
+/* Modal Background */
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0, 0, 0, 0.5);
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	z-index: 999; /* Ensure it’s above all other content */
+}
+
+/* Modal Content */
+.modal-content {
+	background: #ffffff;
+	padding: 20px;
+	border-radius: 10px;
+	width: 400px;
+	max-width: 90%;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+	animation: fadeIn 0.3s ease-in-out; /* Add a smooth fade-in effect */
+}
+
+/* Animation for modal appearance */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: scale(0.9);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* Form Group */
+.form-group {
+	margin-bottom: 15px;
+}
+
+.form-group label {
+	display: block;
+	margin-bottom: 5px;
+	font-weight: bold;
+	color: #333;
+}
+
+.form-group input {
+	width: 100%;
+	padding: 10px;
+	margin-top: 5px;
+	border: 1px solid #ccc;
+	border-radius: 40px;
+	font-size: 16px;
+	box-sizing: border-box;
+}
+
+/* Buttons */
+.form-group button {
+	padding: 10px 15px;
+	margin-right: 10px;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 16px;
+	transition: background 0.3s ease;
+}
+
+.form-group button[type="submit"] {
+	background: #fc8050;
+	color: white;
+}
+
+.form-group button[type="button"] {
+	background: #4f646f;
+	color: white;
+}
+
+/* Hover and Focus States */
+.form-group button:hover {
+	opacity: 0.9;
+}
+
+.form-group input:focus {
+	border-color: #007bff;
+	outline: none;
+}
+
+/* Modal Header */
+.modal-content h2 {
+	margin-bottom: 20px;
+	font-size: 22px;
+	text-align: center;
+	color: #333;
+}
+
+/* Add Transaction Button */
+.add-transaction a {
+	display: inline-block;
+	padding: 10px 20px;
+	/* background: #007bff; */
+	color: white;
+	text-decoration: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 16px;
+	transition: background 0.3s ease;
+}
+
+/* .add-transaction a:hover {
+	background: #0056b3;
+} */
