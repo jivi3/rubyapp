@@ -15,7 +15,7 @@ const openai = new OpenAI({
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || "f56b280bba90f6274eee1e2b1aa53990f51b739ea69a07b08233d0019fe60fcf";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 app.use(
 	cors({
